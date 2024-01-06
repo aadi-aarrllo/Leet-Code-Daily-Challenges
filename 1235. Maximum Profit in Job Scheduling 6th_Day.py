@@ -26,56 +26,12 @@ Constraints:
 1 <= profit[i] <= 104'''
 
 # Solution ----------------------------------------------------------------------------------------------------------------------------------
-# Solution 1: Dynamic Programming
-# Time Complexity: O(n^2)
-# Space Complexity: O(n)
 class Solution:
     def jobScheduling(self, startTime: List[int], endTime: List[int], profit: List[int]) -> int:
-        if len(startTime) == 0:
-            return 0
-        jobs = []
-        for i in range(len(startTime)):
-            jobs.append([startTime[i], endTime[i], profit[i]])
-        jobs.sort(key = lambda x: x[1])
-        dp = [0] * len(jobs)
-        dp[0] = jobs[0][2]
-        for i in range(1, len(jobs)):
-            dp[i] = max(dp[i - 1], jobs[i][2])
-            for j in range(i - 1, -1, -1):
-                if jobs[i][0] >= jobs[j][1]:
-                    dp[i] = max(dp[i], dp[j] + jobs[i][2])
-                    break
-        return dp[-1]
-    
-# Solution 2: Dynamic Programming with Binary Search
-# Time Complexity: O(n log(n))
-# Space Complexity: O(n)
-class Solution:
-    def jobScheduling(self, startTime: List[int], endTime: List[int], profit: List[int]) -> int:
-        if len(startTime) == 0:
-            return 0
-        jobs = []
-        for i in range(len(startTime)):
-            jobs.append([startTime[i], endTime[i], profit[i]])
-        jobs.sort(key = lambda x: x[1])
-        dp = [0] * len(jobs)
-        dp[0] = jobs[0][2]
-        for i in range(1, len(jobs)):
-            dp[i] = max(dp[i - 1], jobs[i][2])
-            index = self.binarySearch(jobs, i)
-            if index != -1:
-                dp[i] = max(dp[i], dp[index] + jobs[i][2])
-        return dp[-1]
-    def binarySearch(self, jobs, i):
-        low = 0
-        high = i - 1
-        while low <= high:
-            mid = low + (high - low) // 2
-            if jobs[mid][1] <= jobs[i][0]:
-                if jobs[mid + 1][1] <= jobs[i][0]:
-                    low = mid + 1
-                else:
-                    return mid
-            else:
-                high = mid - 1
-        return -1
+        jobs = sorted(zip(startTime, endTime, profit), key=lambda v: v[1])
+        dp = [[0, 0]]
+        for s, e, p in jobs:
+            i = bisect.bisect(dp, [s + 1]) - 1
+            if dp[i][1] + p > dp[-1][1]:
+                dp.append([e, dp[i][1] + p])
+        return dp[-1][1]
